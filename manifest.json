@@ -1,0 +1,63 @@
+{
+  "manifest_version": 3,
+  "name": "Sketchfab Model Downloader",
+  "version": "2.0.0",
+  "description": "在 Sketchfab 模型页面注入下载面板，支持直接获取 osgjs/binz/glTF 原始文件",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "storage",
+    "downloads",
+    "scripting",
+    "webRequest",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://sketchfab.com/*",
+    "https://api.sketchfab.com/*",
+    "https://media.sketchfab.com/*",
+    "https://*.amazonaws.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://sketchfab.com/*",
+        "https://embed.sketchfab.com/*",
+        "https://media.sketchfab.com/*"
+      ],
+      "js": ["content/interceptor.js"],
+      "run_at": "document_start",
+      "world": "MAIN",
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://sketchfab.com/3d-models/*",
+        "https://sketchfab.com/models/*"
+      ],
+      "js": ["content/inject.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  "background": {
+    "service_worker": "background/sw.js"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Sketchfab Downloader",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png"
+    }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["content/interceptor.js"],
+      "matches": ["https://sketchfab.com/*"]
+    }
+  ]
+}

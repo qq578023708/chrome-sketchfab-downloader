@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sketchfab Downloader</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 320px;
+      background: #0d1117;
+      color: #c9d1d9;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px;
+    }
+    .header {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      padding: 16px 18px;
+      border-bottom: 1px solid rgba(100,220,255,0.15);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header h1 { font-size: 15px; font-weight: 700; color: #e0e0e0; }
+    .header .sub { font-size: 11px; color: #666; margin-top: 2px; }
+    .logo { font-size: 24px; }
+
+    .section { padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .section:last-child { border-bottom: none; }
+    .section-title {
+      color: #888; font-size: 10px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+    }
+
+    .input-row { display: flex; gap: 8px; }
+    input[type="password"], input[type="text"] {
+      flex: 1; background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px; padding: 7px 10px;
+      color: #c9d1d9; font-size: 12px; outline: none;
+    }
+    input:focus { border-color: rgba(0,180,255,0.5); }
+    input::placeholder { color: #555; }
+
+    button {
+      padding: 7px 14px; border-radius: 6px; border: none;
+      font-size: 12px; font-weight: 600; cursor: pointer;
+      transition: all 0.15s; white-space: nowrap;
+    }
+    .btn-primary { background: linear-gradient(135deg,#00b4ff,#0066ff); color: #fff; }
+    .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .btn-ghost { background: rgba(255,255,255,0.06); color: #aaa; border: 1px solid rgba(255,255,255,0.1); }
+    .btn-ghost:hover { background: rgba(255,255,255,0.1); color: #ddd; }
+
+    .status {
+      padding: 8px 10px; border-radius: 6px; font-size: 11px; margin-top: 8px;
+    }
+    .status.ok    { background: rgba(0,200,100,0.08); color: #00c864; border: 1px solid rgba(0,200,100,0.2); }
+    .status.error { background: rgba(255,80,80,0.08);  color: #ff6060; border: 1px solid rgba(255,80,80,0.2); }
+    .status.info  { background: rgba(0,180,255,0.08);  color: #00b4ff; border: 1px solid rgba(0,180,255,0.2); }
+
+    .info-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { color: #666; font-size: 11px; }
+    .info-val { color: #c9d1d9; font-size: 11px; font-family: monospace; }
+    .info-val.cyan { color: #00d4ff; }
+
+    .hint {
+      background: rgba(255,180,0,0.06);
+      border: 1px solid rgba(255,180,0,0.2);
+      border-radius: 8px; padding: 10px 12px;
+      color: #ffb400; font-size: 11px; line-height: 1.5;
+    }
+    a { color: #00b4ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span class="logo">⬇️</span>
+    <div>
+      <div class="header h1" style="font-size:15px;font-weight:700;color:#e0e0e0">Sketchfab Downloader</div>
+      <div class="sub">直接获取模型原始文件</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🔑 API Token 设置</div>
+    <div class="input-row">
+      <input type="password" id="token-input" placeholder="在 Settings → Password 页面获取">
+      <button class="btn-primary" id="save-token">保存</button>
+    </div>
+    <div id="token-status" style="display:none" class="status"></div>
+    <div style="margin-top:8px;font-size:11px;color:#666">
+      <a href="https://sketchfab.com/settings/password" target="_blank">
+        → 点此前往获取 API Token
+      </a>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">📄 当前页面</div>
+    <div id="page-info">
+      <div class="info-row">
+        <span class="info-label">状态</span>
+        <span class="info-val" id="page-status">检测中…</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">模型 UID</span>
+        <span class="info-val cyan" id="page-uid">—</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">文件数</span>
+        <span class="info-val" id="file-count">—</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="hint">
+      💡 打开任意 Sketchfab 模型页面，下载面板会自动出现在页面右下角。
+      无需在此处操作，直接在模型页面点击 <strong>⬇️ 下载模型</strong> 按钮即可。
+    </div>
+  </div>
+
+  <div class="section" style="font-size:11px;color:#555;line-height:1.6;padding-bottom:16px">
+    <strong style="color:#888">使用说明</strong><br>
+    1. 访问任意模型页面，等待加载完成<br>
+    2. 点击右下角浮动按钮打开下载面板<br>
+    3. 原始文件（osgjs/binz）无需 Token<br>
+    4. 官方 glTF 格式需要 API Token<br>
+    <br>
+    <strong style="color:#888">.binz 格式说明</strong><br>
+    本质为 gzip 压缩的 OpenSceneGraph Binary，<br>
+    旧版可直接解压，新版需 XOR 解密后再解压。
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
