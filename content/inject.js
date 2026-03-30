@@ -1,3 +1,11 @@
+function isModelDetailPage() {
+  return /sketchfab\.com\/(3d-models\/[^/?#]+-|models\/)([a-f0-9]{32})/.test(location.href);
+}
+
+if (!isModelDetailPage()) {
+  // 非模型详情页，不挂载任何逻辑
+} else {
+
 chrome.runtime.onMessage.addListener((msg) => {
   if (msg.type === 'networkRequest' && msg.url) {
     const url = msg.url;
@@ -530,3 +538,6 @@ function injectStyles() {
   `;
   document.head.appendChild(style);
 }
+
+} // end isModelDetailPage
+

@@ -1,5 +1,13 @@
 (function () {
   if (window.__SF_DL_INJECTED__) return;
+
+  function isModelDetailPage() {
+    const href = location.href;
+    return /sketchfab\.com\/(3d-models\/[^/?#]+-|models\/)([a-f0-9]{32})/.test(href);
+  }
+
+  if (!isModelDetailPage()) return;
+
   window.__SF_DL_INJECTED__ = true;
 
   const WORKER_PROBE_CODE = `
